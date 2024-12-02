@@ -1,0 +1,136 @@
+#include <iostream>
+#include <map>
+#include <string>
+
+using namespace std;
+
+// Node structure for the suffix tree
+struct SuffixTreeNode {
+    map<char, SuffixTreeNode*> children; // Edges labeled by characters
+    int start;                          // Start index of the substring
+    int* end;                           // End index of the substring
+    SuffixTreeNode* suffixLink;         // Suffix link (used in advanced algorithms)
+
+    SuffixTreeNode(int start, int* end) : start(start), end(end), suffixLink(nullptr) {}
+};
+
+// Helper function to delete the suffix tree
+void deleteTree(SuffixTreeNode* node) {
+    for (auto& child : node->children) {
+        deleteTree(child.second);
+    }
+    delete node;
+}
+
+// Suffix tree class
+class SuffixTree {
+private:
+    string text;                    // Input string
+    SuffixTreeNode* root;           // Root of the tree
+    int leafEnd;                    // Common end for all leaf nodes
+
+    // Extend the suffix tree with a new suffix
+    void extendTree(int pos) {
+        static SuffixTreeNode* activeNode = root;
+        static int activeEdge = -1;
+        static int activeLength = 0;
+        static int remainingSuffixCount = 0;
+        static SuffixTreeNode* lastCreatedInternalNode = nullptr;
+
+        leafEnd = pos;
+        remainingSuffixCount++;
+
+        while (remainingSuffixCount > 0) {
+            if (activeLength == 0) {
+                activeEdge = pos;
+            }
+
+            char edgeChar = text[activeEdge];
+            if (activeNode->children.find(edgeChar) == activeNode->children.end()) {
+                // No edge starting with activeEdge
+                activeNode->children[edgeChar] = new SuffixTreeNode(pos, &leafEnd);
+                if (lastCreatedInternalNode != nullptr) {
+                    lastCreatedInternalNode->suffixLink = activeNode;
+                    lastCreatedInternalNode = nullptr;
+                }
+            } else {
+                // Active edge exists
+                SuffixTreeNode* next = activeNode->children[edgeChar];
+                int edgeLength = *(next->end) - next->start + 1;
+                if (activeLength >= edgeLength) {
+                    activeEdge += edgeLength;
+                    activeLength -= edgeLength;
+                    activeNode = next;
+                    continue;
+                }
+
+                if (text[next->start + activeLength] == text[pos]) {
+                    activeLength++;
+                    if (lastCreatedInternalNode != nullptr) {
+                        lastCreatedInternalNode->suffixLink = activeNode;
+                        lastCreatedInternalNode = nullptr;
+                    }
+                    break;
+                }
+
+                // Split edge
+                SuffixTreeNode* split = new SuffixTreeNode(next->start, new int(next->start + activeLength - 1));
+                activeNode->children[edgeChar] = split;
+                split->children[text[pos]] = new SuffixTreeNode(pos, &leafEnd);
+                next->start += activeLength;
+                split->children[text[next->start]] = next;
+
+                if (lastCreatedInternalNode != nullptr) {
+                    lastCreatedInternalNode->suffixLink = split;
+                }
+                lastCreatedInternalNode = split;
+            }
+
+            remainingSuffixCount--;
+
+            if (activeNode == root && activeLength > 0) {
+                activeLength--;
+                activeEdge = pos - remainingSuffixCount + 1;
+            } else if (activeNode != root) {
+                activeNode = activeNode->suffixLink;
+            }
+        }
+    }
+
+    // Print the tree
+    void printTree(SuffixTreeNode* node, int height) const {
+        for (auto& child : node->children) {
+            int start = child.second->start;
+            int end = *(child.second->end);
+            cout << string(height, ' ') << text.substr(start, end - start + 1) << endl;
+            printTree(child.second, height + 2);
+        }
+    }
+
+public:
+    SuffixTree(const string& s) : text(s), leafEnd(-1) {
+        root = new SuffixTreeNode(-1, new int(-1));
+        for (int i = 0; i < s.size(); i++) {
+            extendTree(i);
+        }
+    }
+
+    ~SuffixTree() {
+        deleteTree(root);
+    }
+
+    void print() const {
+        printTree(root, 0);
+    }
+};
+
+int main() {
+    string input = "banana";
+    input += "$"; // Add a unique terminator to the string
+    SuffixTree st(input);
+
+    cout << "Suffix Tree:" << endl;
+    st.print();
+
+    return 0;
+}
