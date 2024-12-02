@@ -1,0 +1,77 @@
+#include <iostream>
+#include <cstdlib> // For rand() and srand()
+#include <ctime>   // For seeding rand()
+
+using namespace std;
+
+// Function to swap two elements
+void swap(int &a, int &b) {
+    int temp = a;
+    a = b;
+    b = temp;
+}
+
+// Partition function
+int partition(int arr[], int low, int high) {
+    int pivot = arr[high];
+    int i = low - 1;
+
+    for (int j = low; j < high; j++) {
+        if (arr[j] <= pivot) {
+            i++;
+            swap(arr[i], arr[j]);
+        }
+    }
+    swap(arr[i + 1], arr[high]);
+    return i + 1;
+}
+
+// Randomized partition function
+int randomizedPartition(int arr[], int low, int high) {
+    // Generate a random index between low and high
+    int randomIndex = low + rand() % (high - low + 1);
+
+    // Swap the randomly chosen pivot with the last element
+    swap(arr[randomIndex], arr[high]);
+
+    // Perform standard partitioning
+    return partition(arr, low, high);
+}
+
+// Randomized quicksort function
+void randomizedQuicksort(int arr[], int low, int high) {
+    if (low < high) {
+        // Partition the array around a randomized pivot
+        int pivotIndex = randomizedPartition(arr, low, high);
+
+        // Recursively sort the left and right subarrays
+        randomizedQuicksort(arr, low, pivotIndex - 1);
+        randomizedQuicksort(arr, pivotIndex + 1, high);
+    }
+}
+
+// Utility function to print the array
+void printArray(int arr[], int size) {
+    for (int i = 0; i < size; i++) {
+        cout << arr[i] << " ";
+    }
+    cout << endl;
+}
+
+// Main function
+int main() {
+    srand(time(0)); // Seed the random number generator
+
+    int arr[] = {10, 7, 8, 9, 1, 5};
+    int n = sizeof(arr) / sizeof(arr[0]);
+
+    cout << "Original array: ";
+    printArray(arr, n);
+
+    randomizedQuicksort(arr, 0, n - 1);
+
+    cout << "Sorted array: ";
+    printArray(arr, n);
+
+    return 0;
+}
