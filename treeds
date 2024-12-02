@@ -1,0 +1,85 @@
+#include <iostream>
+using namespace std;
+
+// Define the structure for a node in the tree
+struct Node {
+    int data;
+    Node* left;
+    Node* right;
+    
+    // Constructor to initialize the node
+    Node(int val) : data(val), left(nullptr), right(nullptr) {}
+};
+
+// Class for Binary Search Tree
+class BST {
+public:
+    Node* root;
+
+    // Constructor to initialize an empty tree
+    BST() : root(nullptr) {}
+
+    // Function to insert a value into the BST
+    void insert(int value) {
+        root = insertHelper(root, value);
+    }
+
+    // Function to search a value in the BST
+    bool search(int value) {
+        return searchHelper(root, value);
+    }
+
+private:
+    // Helper function to insert a value recursively
+    Node* insertHelper(Node* node, int value) {
+        if (node == nullptr) {
+            return new Node(value); // Create a new node if the current node is null
+        }
+
+        // Recursively find the correct place for the value
+        if (value < node->data) {
+            node->left = insertHelper(node->left, value);
+        } else if (value > node->data) {
+            node->right = insertHelper(node->right, value);
+        }
+
+        // Return the unchanged node pointer
+        return node;
+    }
+
+    // Helper function to search for a value recursively
+    bool searchHelper(Node* node, int value) {
+        if (node == nullptr) {
+            return false; // Value not found
+        }
+
+        // If the value is found at the current node, return true
+        if (node->data == value) {
+            return true;
+        }
+
+        // Search in the left or right subtree based on the value
+        if (value < node->data) {
+            return searchHelper(node->left, value);
+        } else {
+            return searchHelper(node->right, value);
+        }
+    }
+};
+
+int main() {
+    BST tree;
+
+    // Insert values into the tree
+    tree.insert(10);
+    tree.insert(20);
+    tree.insert(5);
+    tree.insert(15);
+    tree.insert(30);
+
+    // Search for values
+    cout << "Searching for 15: " << (tree.search(15) ? "Found" : "Not Found") << endl;
+    cout << "Searching for 25: " << (tree.search(25) ? "Found" : "Not Found") << endl;
+
+    return 0;
+}
