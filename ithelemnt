@@ -1,0 +1,68 @@
+#include <iostream>
+#include <cstdlib>
+#include <ctime>
+using namespace std;
+
+// Function to partition the array into two parts
+// It selects a random pivot and partitions the array around it
+int partition(int arr[], int low, int high) {
+    // Choose a random pivot and swap it with the last element
+    int pivotIndex = low + rand() % (high - low + 1);
+    swap(arr[pivotIndex], arr[high]);
+    int pivot = arr[high];
+
+    int i = low - 1;
+    for (int j = low; j <= high - 1; j++) {
+        if (arr[j] <= pivot) {
+            i++;
+            swap(arr[i], arr[j]);
+        }
+    }
+    swap(arr[i + 1], arr[high]);
+    return i + 1;
+}
+
+// Function to select the ith smallest element
+int randomizedSelect(int arr[], int low, int high, int i) {
+    if (low == high) {
+        return arr[low];
+    }
+
+    int pivotIndex = partition(arr, low, high);
+    int k = pivotIndex - low + 1; // Number of elements on the left of pivot
+
+    if (i == k) {
+        return arr[pivotIndex];  // Found the ith element
+    } else if (i < k) {
+        return randomizedSelect(arr, low, pivotIndex - 1, i);  // Recurse on left
+    } else {
+        return randomizedSelect(arr, pivotIndex + 1, high, i - k);  // Recurse on right
+    }
+}
+
+int main() {
+    srand(time(0));  // Seed for random number generation
+
+    int n;
+    cout << "Enter the number of elements: ";
+    cin >> n;
+
+    int arr[n];
+    cout << "Enter the elements of the array:\n";
+    for (int i = 0; i < n; i++) {
+        cin >> arr[i];
+    }
+
+    int i;
+    cout << "Enter the value of i (position of the element to find): ";
+    cin >> i;
+
+    if (i < 1 || i > n) {
+        cout << "Invalid value of i!" << endl;
+    } else {
+        int result = randomizedSelect(arr, 0, n - 1, i);
+        cout << "The " << i << "th smallest element is: " << result << endl;
+    }
+
+    return 0;
+}
