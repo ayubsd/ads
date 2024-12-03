@@ -1,0 +1,133 @@
+#include <iostream>
+#include <stdexcept>
+
+template <typename T>
+class List {
+private:
+    T* data;          // Pointer to the array holding the elements
+    size_t capacity;  // Maximum capacity of the list
+    size_t size;      // Current number of elements in the list
+
+    void resize(size_t newCapacity) {
+        T* newData = new T[newCapacity];
+        for (size_t i = 0; i < size; ++i)
+            newData[i] = data[i];
+        delete[] data;
+        data = newData;
+        capacity = newCapacity;
+    }
+
+public:
+    // Constructor
+    List(size_t initialCapacity = 10) : capacity(initialCapacity), size(0) {
+        data = new T[capacity];
+    }
+
+    // Destructor
+    ~List() {
+        delete[] data;
+    }
+
+    // Get the size of the list
+    size_t getSize() const {
+        return size;
+    }
+
+    // Check if the list is empty
+    bool isEmpty() const {
+        return size == 0;
+    }
+
+    // Insert an element at a specific position
+    void insert(size_t index, const T& value) {
+        if (index > size) {
+            throw std::out_of_range("Index out of bounds");
+        }
+        if (size == capacity) {
+            resize(capacity == 0 ? 1 : 2 * capacity); // Double the capacity if needed
+        }
+        for (size_t i = size; i > index; --i) {
+            data[i] = data[i - 1];
+        }
+        data[index] = value;
+        ++size;
+    }
+
+    // Remove an element at a specific position
+    void remove(size_t index) {
+        if (index >= size) {
+            throw std::out_of_range("Index out of bounds");
+        }
+        for (size_t i = index; i < size - 1; ++i) {
+            data[i] = data[i + 1];
+        }
+        --size;
+    }
+
+    // Access an element at a specific position
+    T& get(size_t index) {
+        if (index >= size) {
+            throw std::out_of_range("Index out of bounds");
+        }
+        return data[index];
+    }
+
+    // Find an element (returns the index or -1 if not found)
+    int find(const T& value) const {
+        for (size_t i = 0; i < size; ++i) {
+            if (data[i] == value) {
+                return static_cast<int>(i);
+            }
+        }
+        return -1;
+    }
+
+    // Clear the list
+    void clear() {
+        size = 0;
+    }
+
+    // Print all elements in the list
+    void print() const {
+        for (size_t i = 0; i < size; ++i) {
+            std::cout << data[i] << " ";
+        }
+        std::cout << std::endl;
+    }
+};
+int main() {
+    List<int> myList;
+
+    // Insert elements
+    myList.insert(0, 10); // Insert 10 at index 0
+    myList.insert(1, 20); // Insert 20 at index 1
+    myList.insert(1, 15); // Insert 15 at index 1 (shifts 20 to index 2)
+
+    // Print the list
+    std::cout << "List after insertion: ";
+    myList.print();
+
+    // Access elements
+    std::cout << "Element at index 1: " << myList.get(1) << std::endl;
+
+    // Find an element
+    int index = myList.find(20);
+    if (index != -1) {
+        std::cout << "Element 20 found at index " << index << std::endl;
+    } else {
+        std::cout << "Element 20 not found" << std::endl;
+    }
+
+    // Remove an element
+    myList.remove(1); // Removes element at index 1 (15)
+
+    // Print the list
+    std::cout << "List after removal: ";
+    myList.print();
+
+    // Clear the list
+    myList.clear();
+    std::cout << "List size after clearing: " << myList.getSize() << std::endl;
+
+    return 0;
+}
