@@ -1,0 +1,126 @@
+#include <iostream>
+#include <stdexcept>
+
+template <typename T>
+class Vector {
+private:
+    T* data;          // Pointer to the array
+    size_t capacity;  // Allocated memory
+    size_t size;      // Number of elements currently in the vector
+
+    void resize(size_t newCapacity) {
+        T* newData = new T[newCapacity]; // Allocate new memory
+        for (size_t i = 0; i < size; ++i)
+            newData[i] = data[i];        // Copy old elements to the new array
+        delete[] data;                   // Free old memory
+        data = newData;                  // Update the data pointer
+        capacity = newCapacity;
+    }
+
+public:
+    // Constructor
+    Vector() : data(nullptr), capacity(0), size(0) {}
+
+    // Destructor
+    ~Vector() {
+        delete[] data;
+    }
+
+    // Size of the vector
+    size_t getSize() const {
+        return size;
+    }
+
+    // Capacity of the vector
+    size_t getCapacity() const {
+        return capacity;
+    }
+
+    // Add an element at the end
+    void push_back(const T& value) {
+        if (size == capacity) {
+            resize(capacity == 0 ? 1 : 2 * capacity); // Double capacity
+        }
+        data[size++] = value;
+    }
+
+    // Remove the last element
+    void pop_back() {
+        if (size > 0) {
+            --size;
+        } else {
+            throw std::out_of_range("Vector is empty");
+        }
+    }
+
+    // Access element by index
+    T& operator[](size_t index) {
+        if (index >= size) {
+            throw std::out_of_range("Index out of bounds");
+        }
+        return data[index];
+    }
+
+    // Access element (const version)
+    const T& operator[](size_t index) const {
+        if (index >= size) {
+            throw std::out_of_range("Index out of bounds");
+        }
+        return data[index];
+    }
+
+    // Insert at a specific position
+    void insert(size_t index, const T& value) {
+        if (index > size) {
+            throw std::out_of_range("Index out of bounds");
+        }
+        if (size == capacity) {
+            resize(capacity == 0 ? 1 : 2 * capacity);
+        }
+        for (size_t i = size; i > index; --i) {
+            data[i] = data[i - 1];
+        }
+        data[index] = value;
+        ++size;
+    }
+
+    // Remove an element at a specific position
+    void erase(size_t index) {
+        if (index >= size) {
+            throw std::out_of_range("Index out of bounds");
+        }
+        for (size_t i = index; i < size - 1; ++i) {
+            data[i] = data[i + 1];
+        }
+        --size;
+    }
+};
+int main() {
+    Vector<int> vec;
+
+    // Add elements
+    vec.push_back(10);
+    vec.push_back(20);
+    vec.push_back(30);
+
+    // Print size and capacity
+    std::cout << "Size: " << vec.getSize() << ", Capacity: " << vec.getCapacity() << std::endl;
+
+    // Access elements
+    for (size_t i = 0; i < vec.getSize(); ++i) {
+        std::cout << vec[i] << " ";
+    }
+    std::cout << std::endl;
+
+    // Insert and erase
+    vec.insert(1, 15); // Insert 15 at index 1
+    vec.erase(2);      // Remove element at index 2
+
+    // Print updated vector
+    for (size_t i = 0; i < vec.getSize(); ++i) {
+        std::cout << vec[i] << " ";
+    }
+    std::cout << std::endl;
+
+    return 0;
+}
